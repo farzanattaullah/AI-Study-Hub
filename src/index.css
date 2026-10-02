@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    background-color: #050811;
+    color: #f1f5f9;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, .font-display {
+    font-family: 'Syne', 'Plus Jakarta Sans', sans-serif;
+    text-wrap: balance;
+  }
+
+  .font-mono, .tabular-nums {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Orbital 3D Ring Animations matching the Cosmic Reference Theme */
+@keyframes orbitRotateSlow {
+  0% {
+    transform: rotateX(68deg) rotateY(-18deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(68deg) rotateY(-18deg) rotateZ(360deg);
+  }
+}
+
+@keyframes orbitRotateReverse {
+  0% {
+    transform: rotateX(56deg) rotateY(28deg) rotateZ(360deg);
+  }
+  100% {
+    transform: rotateX(56deg) rotateY(28deg) rotateZ(0deg);
+  }
+}
+
+@keyframes orbitRotateTilted {
+  0% {
+    transform: rotateX(74deg) rotateY(8deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(74deg) rotateY(8deg) rotateZ(360deg);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px) translateZ(30px);
+  }
+  50% {
+    transform: translateY(-8px) translateZ(30px);
+  }
+}
+
+.orbit-ring-1 {
+  animation: orbitRotateSlow 26s linear infinite;
+}
+
+.orbit-ring-2 {
+  animation: orbitRotateReverse 34s linear infinite;
+}
+
+.orbit-ring-3 {
+  animation: orbitRotateTilted 20s linear infinite;
+}
+
+.float-3d-badge {
+  animation: floatGentle 5s ease-in-out infinite;
+}
