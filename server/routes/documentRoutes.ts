@@ -1,11 +1,11 @@
-import { Router, Response } from 'express';
+import express, { type Response } from 'express';
 import multer from 'multer';
-import { authenticateToken, AuthRequest } from '../middleware/auth.js';
-import { dbStore } from '../config/db.js';
-import { extractTextFromUploadedFile } from '../services/pdfService.js';
-import { analyzeDocumentWithAI } from '../services/aiService.js';
+import { authenticateToken, type AuthRequest } from '../middleware/auth.ts';
+import { dbStore } from '../config/db.ts';
+import { extractTextFromUploadedFile } from '../services/pdfService.ts';
+import { analyzeDocumentWithAI } from '../services/aiService.ts';
 
-const router = Router();
+const router = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -167,7 +167,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
 // GET /api/documents/:id
 router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const doc = await dbStore.getDocumentById(req.params.id, req.user!.id);
+    const docId = String(req.params.id);
+    const doc = await dbStore.getDocumentById(docId, req.user!.id);
     if (!doc) {
       return res.status(404).json({ error: 'Document not found or access denied.' });
     }
@@ -180,11 +181,12 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
 // PATCH /api/documents/:id/source-preference
 router.patch('/:id/source-preference', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
+    const docId = String(req.params.id);
     const { sourcePreference } = req.body;
     if (sourcePreference !== 'pdf_only' && sourcePreference !== 'pdf_and_external') {
       return res.status(400).json({ error: 'Invalid source preference mode.' });
     }
-    const updated = await dbStore.updateDocument(req.params.id, req.user!.id, {
+    const updated = await dbStore.updateDocument(docId, req.user!.id, {
       sourcePreference,
     });
     if (!updated) {
@@ -192,10 +194,10 @@ router.patch('/:id/source-preference', authenticateToken, async (req: AuthReques
     }
 
     // Also sync sourceMode in Chat
-    const existingChat = await dbStore.getChatByDocument(req.params.id, req.user!.id);
+    const existingChat = await dbStore.getChatByDocument(docId, req.user!.id);
     if (existingChat) {
       await dbStore.saveOrUpdateChat(
-        req.params.id,
+        docId,
         req.user!.id,
         existingChat.messages,
         sourcePreference
@@ -211,11 +213,12 @@ router.patch('/:id/source-preference', authenticateToken, async (req: AuthReques
 // POST /api/documents/:id/saved-questions
 router.post('/:id/saved-questions', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
+    const docId = String(req.params.id);
     const { question } = req.body;
     if (!question) {
       return res.status(400).json({ error: 'Question text is required.' });
     }
-    const doc = await dbStore.getDocumentById(req.params.id, req.user!.id);
+    const doc = await dbStore.getDocumentById(docId, req.user!.id);
     if (!doc) {
       return res.status(404).json({ error: 'Document not found.' });
     }
@@ -226,7 +229,7 @@ router.post('/:id/saved-questions', authenticateToken, async (req: AuthRequest, 
       ? currentSaved.filter((q) => q !== question)
       : [...currentSaved, question];
 
-    const updated = await dbStore.updateDocument(req.params.id, req.user!.id, {
+    const updated = await dbStore.updateDocument(docId, req.user!.id, {
       savedQuestions: updatedSaved,
     });
     return res.json({
@@ -241,7 +244,8 @@ router.post('/:id/saved-questions', authenticateToken, async (req: AuthRequest, 
 // DELETE /api/documents/:id
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const deleted = await dbStore.deleteDocument(req.params.id, req.user!.id);
+    const docId = String(req.params.id);
+    const deleted = await dbStore.deleteDocument(docId, req.user!.id);
     if (!deleted) {
       return res.status(404).json({ error: 'Document not found.' });
     }

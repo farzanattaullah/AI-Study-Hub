@@ -1,8 +1,8 @@
-import { Router, Response } from 'express';
-import { authenticateToken, AuthRequest } from '../middleware/auth.js';
-import { dbStore } from '../config/db.js';
+import express, { type Response } from 'express';
+import { authenticateToken, type AuthRequest } from '../middleware/auth.ts';
+import { dbStore } from '../config/db.ts';
 
-const router = Router();
+const router = express.Router();
 
 // GET /api/quizzes
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
@@ -17,7 +17,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
 // GET /api/quizzes/:id
 router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const quiz = await dbStore.getQuizById(req.params.id, req.user!.id);
+    const quizId = String(req.params.id);
+    const quiz = await dbStore.getQuizById(quizId, req.user!.id);
     if (!quiz) {
       return res.status(404).json({ error: 'Quiz not found.' });
     }
@@ -30,8 +31,9 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
 // POST /api/quizzes/:id/submit
 router.post('/:id/submit', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
+    const quizId = String(req.params.id);
     const { answers } = req.body;
-    const quiz = await dbStore.getQuizById(req.params.id, req.user!.id);
+    const quiz = await dbStore.getQuizById(quizId, req.user!.id);
     if (!quiz) {
       return res.status(404).json({ error: 'Quiz not found.' });
     }
@@ -51,7 +53,7 @@ router.post('/:id/submit', authenticateToken, async (req: AuthRequest, res: Resp
 
     const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
 
-    const updatedQuiz = await dbStore.updateQuiz(req.params.id, req.user!.id, {
+    const updatedQuiz = await dbStore.updateQuiz(quizId, req.user!.id, {
       score: correctCount,
       totalQuestions,
       percentage,

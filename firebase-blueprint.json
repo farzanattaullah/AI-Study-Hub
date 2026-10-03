@@ -1,0 +1,233 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents an authenticated student user.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Student full name.",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "Student email address.",
+          "maxLength": 150
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account creation timestamp."
+        }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "Document": {
+      "title": "Document",
+      "description": "Study document uploaded by student (PDF or TXT).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique document identifier."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the document owner."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the study material.",
+          "maxLength": 200
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Original uploaded filename.",
+          "maxLength": 200
+        },
+        "fileType": {
+          "type": "string",
+          "enum": ["PDF", "TXT"],
+          "description": "Format of the uploaded file."
+        },
+        "fileSize": {
+          "type": "number",
+          "description": "File size in bytes."
+        },
+        "extractedText": {
+          "type": "string",
+          "description": "Extracted text content from the study file."
+        },
+        "summary": {
+          "type": "object",
+          "description": "AI-generated short, detailed summary, key points, and formulas."
+        },
+        "importantTopics": {
+          "type": "array",
+          "description": "List of core topics extracted from the document."
+        },
+        "importantDefinitions": {
+          "type": "array",
+          "description": "Key definitions and concepts."
+        },
+        "importantQuestions": {
+          "type": "object",
+          "description": "Exam-oriented short and long answer questions."
+        },
+        "savedQuestions": {
+          "type": "array",
+          "description": "List of bookmarked question strings."
+        },
+        "explanationsCache": {
+          "type": "object",
+          "description": "Cached topic explanations."
+        },
+        "sourcePreference": {
+          "type": "string",
+          "enum": ["pdf_only", "pdf_and_external"],
+          "description": "AI tutor search preference."
+        },
+        "processingStatus": {
+          "type": "string",
+          "enum": ["processing", "ready", "error"],
+          "description": "AI processing status."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update."
+        }
+      },
+      "required": ["userId", "title", "fileType"]
+    },
+    "Quiz": {
+      "title": "Quiz",
+      "description": "Interactive multiple choice quiz generated from a study document.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique quiz identifier."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "ID of the source study document."
+        },
+        "documentTitle": {
+          "type": "string",
+          "description": "Title of the source study document.",
+          "maxLength": 200
+        },
+        "title": {
+          "type": "string",
+          "description": "Quiz assessment title.",
+          "maxLength": 200
+        },
+        "questions": {
+          "type": "array",
+          "description": "List of quiz questions with options and explanations."
+        },
+        "totalQuestions": {
+          "type": "number",
+          "description": "Total number of questions."
+        },
+        "score": {
+          "type": "number",
+          "description": "User score (number of correct answers)."
+        },
+        "percentage": {
+          "type": "number",
+          "description": "Percentage accuracy."
+        },
+        "userAnswers": {
+          "type": "array",
+          "description": "Array of student selected option indices."
+        },
+        "completedAt": {
+          "type": "string",
+          "description": "ISO timestamp of quiz completion."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of quiz creation."
+        }
+      },
+      "required": ["userId", "documentId", "title", "questions"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "Source-First AI Tutor chat session for a study document.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique chat session identifier."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "Associated document ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner."
+        },
+        "messages": {
+          "type": "array",
+          "description": "List of chat messages exchanged with the AI tutor."
+        },
+        "sourceMode": {
+          "type": "string",
+          "enum": ["pdf_only", "pdf_and_external"],
+          "description": "Active tutor source mode."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp."
+        }
+      },
+      "required": ["documentId", "userId", "messages"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Student profile documents containing basic info."
+    },
+    "/users/{userId}/documents/{documentId}": {
+      "schema": {
+        "$ref": "#/entities/Document"
+      },
+      "description": "User's uploaded lecture notes and study documents."
+    },
+    "/users/{userId}/quizzes/{quizId}": {
+      "schema": {
+        "$ref": "#/entities/Quiz"
+      },
+      "description": "User's MCQ practice quizzes and graded scores."
+    },
+    "/users/{userId}/chats/{chatId}": {
+      "schema": {
+        "$ref": "#/entities/Chat"
+      },
+      "description": "User's Source-First AI Tutor chat sessions."
+    }
+  }
+}

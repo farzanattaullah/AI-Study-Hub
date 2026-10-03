@@ -2,13 +2,14 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
-import { connectDatabase } from './server/config/db.js';
-import authRoutes from './server/routes/authRoutes.js';
-import documentRoutes from './server/routes/documentRoutes.js';
-import aiRoutes from './server/routes/aiRoutes.js';
-import quizRoutes from './server/routes/quizRoutes.js';
-import chatRoutes from './server/routes/chatRoutes.js';
+import { connectDatabase } from './server/config/db.ts';
+import authRoutes from './server/routes/authRoutes.ts';
+import documentRoutes from './server/routes/documentRoutes.ts';
+import aiRoutes from './server/routes/aiRoutes.ts';
+import quizRoutes from './server/routes/quizRoutes.ts';
+import chatRoutes from './server/routes/chatRoutes.ts';
 
 async function startServer() {
   await connectDatabase();
@@ -38,6 +39,11 @@ async function startServer() {
   app.use('/api/quizzes', quizRoutes);
   app.use('/api/chats', chatRoutes);
 
+  // Fallback 404 for any unmatched API route to always guarantee JSON response
+  app.use('/api', (req, res) => {
+    res.status(404).json({ error: `API route ${req.method} ${req.originalUrl} not found` });
+  });
+
   // Database offline / Mongoose fallback error middleware
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (
@@ -59,18 +65,20 @@ async function startServer() {
     next(err);
   });
 
-  if (process.env.NODE_ENV !== 'production') {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const distPath = path.join(process.cwd(), 'dist');
+
+  if (isProduction && fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.use((_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  } else {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
   }
 
   app.listen(PORT, '0.0.0.0', () => {

@@ -2,12 +2,13 @@
   "name": "creative_coding-flip_book",
   "type": "module",
   "version": "1.0.0",
-  "description": "This project is a flip book created with HTML and CSS.",
-  "main": "script.js",
+  "description": "AI Study Assistant — Upload. Understand. Practice. Learn.",
+  "main": "server.ts",
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
-    "start": "NODE_ENV=production tsx server.ts",
+    "start": "node server.ts",
+    "lint": "tsc --noEmit",
     "preview": "vite preview"
   },
   "keywords": [],
@@ -21,6 +22,7 @@
     "cors": "^2.8.6",
     "dotenv": "^18.0.5",
     "express": "^5.2.1",
+    "firebase": "^12.19.0",
     "framer-motion": "^13.5.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.49.0",
@@ -32,6 +34,7 @@
     "unpdf": "^1.8.1"
   },
   "devDependencies": {
+    "@firebase/eslint-plugin-security-rules": "^0.0.2",
     "@tailwindcss/vite": "^4.3.3",
     "@types/bcryptjs": "^3.0.0",
     "@types/canvas-confetti": "^1.9.0",

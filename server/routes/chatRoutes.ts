@@ -1,13 +1,13 @@
-import { Router, Response } from 'express';
-import { authenticateToken, AuthRequest } from '../middleware/auth.js';
-import { dbStore } from '../config/db.js';
+import express, { type Response } from 'express';
+import { authenticateToken, type AuthRequest } from '../middleware/auth.ts';
+import { dbStore } from '../config/db.ts';
 
-const router = Router();
+const router = express.Router();
 
 // GET /api/chats/:documentId
 router.get('/:documentId', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { documentId } = req.params;
+    const documentId = String(req.params.documentId);
     const doc = await dbStore.getDocumentById(documentId, req.user!.id);
     if (!doc) {
       return res.status(404).json({ error: 'Document not found.' });
@@ -41,7 +41,7 @@ router.get('/:documentId', authenticateToken, async (req: AuthRequest, res: Resp
 // POST /api/chats/:documentId (Sync chat or sourceMode)
 router.post('/:documentId', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { documentId } = req.params;
+    const documentId = String(req.params.documentId);
     const { sourceMode } = req.body;
     const doc = await dbStore.getDocumentById(documentId, req.user!.id);
     if (!doc) {
@@ -68,7 +68,7 @@ router.post('/:documentId', authenticateToken, async (req: AuthRequest, res: Res
 // DELETE /api/chats/:documentId
 router.delete('/:documentId', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const { documentId } = req.params;
+    const documentId = String(req.params.documentId);
     const doc = await dbStore.getDocumentById(documentId, req.user!.id);
     if (!doc) {
       return res.status(404).json({ error: 'Document not found.' });

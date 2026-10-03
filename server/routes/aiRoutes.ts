@@ -1,6 +1,6 @@
-import { Router, Response } from 'express';
-import { authenticateToken, AuthRequest } from '../middleware/auth.js';
-import { dbStore } from '../config/db.js';
+import express, { type Response } from 'express';
+import { authenticateToken, type AuthRequest } from '../middleware/auth.ts';
+import { dbStore } from '../config/db.ts';
 import {
   generateSummaryOnly,
   generateQuestionsOnly,
@@ -8,9 +8,9 @@ import {
   generateQuizFromMaterial,
   askTutorSourceFirst,
   searchReliableExternalSources,
-} from '../services/aiService.js';
+} from '../services/aiService.ts';
 
-const router = Router();
+const router = express.Router();
 
 // POST /api/ai/summarize
 router.post('/summarize', authenticateToken, async (req: AuthRequest, res: Response) => {

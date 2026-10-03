@@ -47,7 +47,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    throw new Error(`Invalid response from server (${res.status})`);
+    const errorMsg =
+      res.status === 404
+        ? 'Server endpoint not found (404). Please verify service status.'
+        : `Invalid response from server (${res.status})`;
+    throw new Error(errorMsg);
   }
 
   if (!res.ok) {
@@ -68,6 +72,12 @@ export const api = {
     request<{ token: string; user: User }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    }),
+
+  syncFirebaseUser: (uid: string, name: string, email: string) =>
+    request<{ token: string; user: User }>('/api/auth/firebase-sync', {
+      method: 'POST',
+      body: JSON.stringify({ uid, name, email }),
     }),
 
   getMe: () => request<{ user: User }>('/api/auth/me'),

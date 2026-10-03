@@ -2,10 +2,10 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import { UserModel } from '../models/User.js';
-import { DocumentModel } from '../models/Document.js';
-import { QuizModel } from '../models/Quiz.js';
-import { ChatModel } from '../models/Chat.js';
+import { UserModel } from '../models/User.ts';
+import { DocumentModel } from '../models/Document.ts';
+import { QuizModel } from '../models/Quiz.ts';
+import { ChatModel } from '../models/Chat.ts';
 
 mongoose.set('bufferCommands', false);
 
@@ -692,7 +692,7 @@ export const dbStore = {
   async findUserByEmail(email: string) {
     const cleanEmail = email.toLowerCase().trim();
     if (isMongoConnected) {
-      return await UserModel.findOne({ email: cleanEmail }).lean();
+      return await (UserModel as any).findOne({ email: cleanEmail }).lean();
     }
     const store = readLocalStore();
     return store.users.find((u) => u.email.toLowerCase() === cleanEmail) || null;
@@ -700,7 +700,7 @@ export const dbStore = {
 
   async findUserById(id: string) {
     if (isMongoConnected) {
-      return await UserModel.findById(id).lean();
+      return await (UserModel as any).findById(id).lean();
     }
     const store = readLocalStore();
     return store.users.find((u) => u._id === id) || null;
@@ -709,10 +709,10 @@ export const dbStore = {
   async createUser(name: string, email: string, passwordHash: string) {
     const cleanEmail = email.toLowerCase().trim();
     if (isMongoConnected) {
-      const created = await UserModel.create({ name, email: cleanEmail, passwordHash });
+      const created = await (UserModel as any).create({ name, email: cleanEmail, passwordHash });
       const userObj = created.toObject();
       const seed = createSeedDocumentsForUser(String(userObj._id));
-      await DocumentModel.insertMany(seed.documents.map(({ _id, ...rest }) => rest));
+      await (DocumentModel as any).insertMany(seed.documents.map(({ _id, ...rest }) => rest));
       return userObj;
     }
     const store = readLocalStore();
@@ -735,7 +735,7 @@ export const dbStore = {
 
   async updateUser(id: string, updates: { name?: string; passwordHash?: string }) {
     if (isMongoConnected) {
-      return await UserModel.findByIdAndUpdate(id, updates, { new: true }).lean();
+      return await (UserModel as any).findByIdAndUpdate(id, updates, { new: true }).lean();
     }
     const store = readLocalStore();
     const idx = store.users.findIndex((u) => u._id === id);
@@ -748,7 +748,7 @@ export const dbStore = {
   // DOCUMENT OPERATIONS
   async getDocumentsByUser(userId: string) {
     if (isMongoConnected) {
-      return await DocumentModel.find({ userId }).sort({ createdAt: -1 }).lean();
+      return await (DocumentModel as any).find({ userId }).sort({ createdAt: -1 }).lean();
     }
     const store = readLocalStore();
     return store.documents
@@ -758,7 +758,7 @@ export const dbStore = {
 
   async getDocumentById(id: string, userId: string) {
     if (isMongoConnected) {
-      return await DocumentModel.findOne({ _id: id, userId }).lean();
+      return await (DocumentModel as any).findOne({ _id: id, userId }).lean();
     }
     const store = readLocalStore();
     return store.documents.find((d) => d._id === id && d.userId === userId) || null;
@@ -766,7 +766,7 @@ export const dbStore = {
 
   async createDocument(docData: any) {
     if (isMongoConnected) {
-      const created = await DocumentModel.create(docData);
+      const created = await (DocumentModel as any).create(docData);
       return created.toObject();
     }
     const store = readLocalStore();
@@ -788,7 +788,7 @@ export const dbStore = {
 
   async updateDocument(id: string, userId: string, updates: any) {
     if (isMongoConnected) {
-      return await DocumentModel.findOneAndUpdate(
+      return await (DocumentModel as any).findOneAndUpdate(
         { _id: id, userId },
         { ...updates, updatedAt: new Date() },
         { new: true }
@@ -808,9 +808,9 @@ export const dbStore = {
 
   async deleteDocument(id: string, userId: string) {
     if (isMongoConnected) {
-      await QuizModel.deleteMany({ documentId: id, userId });
-      await ChatModel.deleteMany({ documentId: id, userId });
-      const res = await DocumentModel.findOneAndDelete({ _id: id, userId });
+      await (QuizModel as any).deleteMany({ documentId: id, userId });
+      await (ChatModel as any).deleteMany({ documentId: id, userId });
+      const res = await (DocumentModel as any).findOneAndDelete({ _id: id, userId });
       return !!res;
     }
     const store = readLocalStore();
@@ -825,7 +825,7 @@ export const dbStore = {
   // QUIZ OPERATIONS
   async getQuizzesByUser(userId: string) {
     if (isMongoConnected) {
-      return await QuizModel.find({ userId }).sort({ createdAt: -1 }).lean();
+      return await (QuizModel as any).find({ userId }).sort({ createdAt: -1 }).lean();
     }
     const store = readLocalStore();
     return store.quizzes
@@ -835,7 +835,7 @@ export const dbStore = {
 
   async getQuizById(id: string, userId: string) {
     if (isMongoConnected) {
-      return await QuizModel.findOne({ _id: id, userId }).lean();
+      return await (QuizModel as any).findOne({ _id: id, userId }).lean();
     }
     const store = readLocalStore();
     return store.quizzes.find((q) => q._id === id && q.userId === userId) || null;
@@ -843,7 +843,7 @@ export const dbStore = {
 
   async createQuiz(quizData: any) {
     if (isMongoConnected) {
-      const created = await QuizModel.create(quizData);
+      const created = await (QuizModel as any).create(quizData);
       return created.toObject();
     }
     const store = readLocalStore();
@@ -863,7 +863,7 @@ export const dbStore = {
 
   async updateQuiz(id: string, userId: string, updates: any) {
     if (isMongoConnected) {
-      return await QuizModel.findOneAndUpdate({ _id: id, userId }, updates, { new: true }).lean();
+      return await (QuizModel as any).findOneAndUpdate({ _id: id, userId }, updates, { new: true }).lean();
     }
     const store = readLocalStore();
     const idx = store.quizzes.findIndex((q) => q._id === id && q.userId === userId);
@@ -876,7 +876,7 @@ export const dbStore = {
   // CHAT OPERATIONS
   async getChatByDocument(documentId: string, userId: string) {
     if (isMongoConnected) {
-      return await ChatModel.findOne({ documentId, userId }).lean();
+      return await (ChatModel as any).findOne({ documentId, userId }).lean();
     }
     const store = readLocalStore();
     return store.chats.find((c) => c.documentId === documentId && c.userId === userId) || null;
@@ -889,14 +889,14 @@ export const dbStore = {
     sourceMode: 'pdf_only' | 'pdf_and_external'
   ) {
     if (isMongoConnected) {
-      const existing = await ChatModel.findOne({ documentId, userId });
+      const existing = await (ChatModel as any).findOne({ documentId, userId });
       if (existing) {
         existing.messages = messages;
         existing.sourceMode = sourceMode;
         await existing.save();
         return existing.toObject();
       }
-      const created = await ChatModel.create({
+      const created = await (ChatModel as any).create({
         documentId,
         userId,
         messages,

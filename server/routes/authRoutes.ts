@@ -1,9 +1,9 @@
-import { Router, Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { dbStore } from '../config/db.js';
-import { authenticateToken, generateToken, AuthRequest } from '../middleware/auth.js';
+import { dbStore } from '../config/db.ts';
+import { authenticateToken, generateToken, type AuthRequest } from '../middleware/auth.ts';
 
-const router = Router();
+const router = express.Router();
 
 // POST /api/auth/register
 router.post('/register', async (req: Request, res: Response) => {
@@ -75,6 +75,39 @@ router.post('/login', async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('[Auth] Login error:', err);
     return res.status(500).json({ error: 'Login failed due to a server error. Please try again.' });
+  }
+});
+
+// POST /api/auth/firebase-sync
+router.post('/firebase-sync', async (req: Request, res: Response) => {
+  try {
+    const { uid, name, email } = req.body;
+    if (!uid || !email) {
+      return res.status(400).json({ error: 'Missing required Firebase user credentials (uid, email).' });
+    }
+
+    const cleanEmail = String(email).toLowerCase().trim();
+    let user = await dbStore.findUserByEmail(cleanEmail);
+
+    if (!user) {
+      // Create user record tied to Firebase identity
+      const dummyHash = await bcrypt.hash(`fb_auth_${uid}_${Date.now()}`, 10);
+      user = await dbStore.createUser(String(name || cleanEmail.split('@')[0]), cleanEmail, dummyHash);
+    }
+
+    const token = generateToken(user);
+    return res.json({
+      token,
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (err: any) {
+    console.error('[Auth] Firebase Sync error:', err);
+    return res.status(500).json({ error: 'Failed to synchronize Firebase credentials.' });
   }
 });
 
