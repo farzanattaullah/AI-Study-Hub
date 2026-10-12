@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   X,
+  Download,
 } from 'lucide-react';
 import { AppRoute } from '../types/study';
 import { useAuth } from '../context/AuthContext';
@@ -166,6 +167,15 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-3">
+            <a
+              href="/api/download-zip"
+              download="ai-study-assistant-source.zip"
+              className="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Download full project source code as .ZIP"
+            >
+              <Download className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">Download Code (.ZIP)</span>
+            </a>
             <button
               type="button"
               onClick={() => handleNavClick('upload')}

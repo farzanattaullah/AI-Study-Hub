@@ -39,30 +39,30 @@ async function startServer() {
   app.use('/api/quizzes', quizRoutes);
   app.use('/api/chats', chatRoutes);
 
+  // Dedicated source code download endpoint
+  app.get('/api/download-zip', (_req, res) => {
+    const publicZip = path.join(process.cwd(), 'public', 'ai-study-assistant-source.zip');
+    const rootZip = path.join(process.cwd(), 'ai-study-assistant-source.zip');
+    const distZip = path.join(process.cwd(), 'dist', 'ai-study-assistant-source.zip');
+    const target = [publicZip, distZip, rootZip].find((p) => fs.existsSync(p));
+
+    if (target) {
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename="ai-study-assistant-source.zip"');
+      return res.sendFile(target);
+    }
+    return res.status(404).json({ error: 'Source archive not found' });
+  });
+
   // Fallback 404 for any unmatched API route to always guarantee JSON response
   app.use('/api', (req, res) => {
     res.status(404).json({ error: `API route ${req.method} ${req.originalUrl} not found` });
   });
 
-  // Database offline / Mongoose fallback error middleware
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (
-      err.name === 'MongooseError' ||
-      err.name === 'MongoNetworkError' ||
-      (err.message && err.message.includes('buffering timed out'))
-    ) {
-      console.warn('[AI Studio] Database offline — returning graceful response');
-      if (req.method === 'GET') {
-        if (req.path.includes('/documents')) {
-          return res.json({ documents: [] });
-        }
-        if (req.path.includes('/quizzes')) {
-          return res.json({ quizzes: [] });
-        }
-      }
-      return res.status(503).json({ error: 'Service temporarily unavailable (database offline)' });
-    }
-    next(err);
+  // Global error handler middleware
+  app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error('[Server Error]', err);
+    res.status(500).json({ error: err.message || 'Internal server error' });
   });
 
   const isProduction = process.env.NODE_ENV === 'production';

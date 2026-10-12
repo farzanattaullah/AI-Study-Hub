@@ -8,6 +8,7 @@ import {
   DocumentSummary,
   ImportantQuestions,
 } from '../types/study';
+import { auth } from '../config/firebase';
 
 const TOKEN_KEY = 'ai_study_assistant_token';
 
@@ -24,7 +25,7 @@ export function setStoredToken(token: string | null) {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getStoredToken();
+  const storedToken = getStoredToken();
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
@@ -33,8 +34,21 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers['Content-Type'] = 'application/json';
   }
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  // Prefer active Firebase user's ID token, with fallback to stored session token
+  let tokenToUse = storedToken;
+  if (auth.currentUser) {
+    try {
+      const fbToken = await auth.currentUser.getIdToken();
+      if (fbToken) {
+        tokenToUse = fbToken;
+      }
+    } catch {
+      // Fallback to stored token
+    }
+  }
+
+  if (tokenToUse) {
+    headers['Authorization'] = `Bearer ${tokenToUse}`;
   }
 
   const res = await fetch(path, {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, Lock, LogOut, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Calendar, Lock, LogOut, CheckCircle2, Download, Code2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import avatarImg from '../assets/images/avatar_student_scholar_1790940938132.jpg';
@@ -214,6 +214,29 @@ export default function ProfilePage() {
           </button>
         </div>
       </form>
+
+      {/* Project Source Code Download Card */}
+      <div className="rounded-2xl bg-[#0a1022]/90 border border-white/[0.08] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 shrink-0">
+            <Code2 className="w-5 h-5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-white">Full Website Source Code (.ZIP)</h3>
+            <p className="text-xs text-slate-400 max-w-lg leading-relaxed">
+              Export the complete codebase including all React components, Express API routes, Gemini AI services, Firebase configurations, and stylesheets in a single archive.
+            </p>
+          </div>
+        </div>
+        <a
+          href="/api/download-zip"
+          download="ai-study-assistant-source.zip"
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(99,102,241,0.35)] shrink-0 cursor-pointer whitespace-nowrap"
+        >
+          <Download className="w-4 h-4" />
+          <span>Download Code (.ZIP)</span>
+        </a>
+      </div>
     </div>
   );
 }

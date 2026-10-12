@@ -39,8 +39,8 @@ When students ask questions in the **AI Tutor**, the system follows a strict **S
 
 - **Frontend**: React 19, TypeScript, Tailwind CSS v4, Vite, Lucide React Icons, Framer Motion, CSS 3D Transforms
 - **Backend**: Node.js, Express.js, RESTful API architecture (`server.ts`)
-- **Database**: MongoDB with Mongoose ODM (plus automatic persistent local JSON store fallback for zero-config container execution)
-- **Authentication**: JWT (`jsonwebtoken`), `bcryptjs` password hashing, protected route middleware
+- **Database**: Cloud Firestore (`firebase-applet-config.json`, `firestore.rules`)
+- **Authentication**: Firebase Authentication (Google Sign-In via popup & native session tokens)
 - **File Processing**: `multer` (file validation & 20MB size limit), `unpdf` PDF text extraction + stream fallback
 - **AI Integration**: Google GenAI SDK (`@google/genai`) running server-side with `gemini-3.8-flash` and Google Search Grounding (`googleSearch`)
 
@@ -52,14 +52,14 @@ When students ask questions in the **AI Tutor**, the system follows a strict **S
 ├── server.ts                      # Express + Vite full-stack server entry point (Port 3000)
 ├── server/
 │   ├── config/
-│   │   └── db.ts                  # MongoDB Mongoose connection & persistent hybrid store
+│   │   └── db.ts                  # Persistent storage adapter & local seed store
 │   ├── middleware/
-│   │   └── auth.ts                # JWT verification & token generation middleware
+│   │   └── auth.ts                # Firebase ID token & session verification middleware
 │   ├── models/
-│   │   ├── User.ts                # User Mongoose schema
-│   │   ├── Document.ts            # Document Mongoose schema
-│   │   ├── Quiz.ts                # Quiz & QuizQuestion Mongoose schema
-│   │   └── Chat.ts                # Chat & Source-First Message Mongoose schema
+│   │   ├── User.ts                # User data model interfaces
+│   │   ├── Document.ts            # Document data model interfaces
+│   │   ├── Quiz.ts                # Quiz & QuizQuestion data model interfaces
+│   │   └── Chat.ts                # Chat & Source-First Message data model interfaces
 │   ├── routes/
 │   │   ├── authRoutes.ts          # /api/auth/* endpoints
 │   │   ├── documentRoutes.ts      # /api/documents/* upload & CRUD endpoints
@@ -113,12 +113,11 @@ npm install
 
 ---
 
-## 6. MongoDB Setup
+## 6. Firebase & Cloud Firestore Setup
 
-1. Install MongoDB Community Server locally or create a free cluster on **MongoDB Atlas**.
-2. Copy your connection URI (e.g., `mongodb://localhost:27017/ai-study-assistant` or `mongodb+srv://...`).
-3. Set `MONGODB_URI` in your `.env` file.
-4. *Note*: If `MONGODB_URI` is not reachable during local development or sandboxed testing, the server automatically activates its persistent local storage adapter (`server/data/store.json`) pre-seeded with 3 university engineering study documents.
+1. Firebase configuration is loaded from `firebase-applet-config.json` containing the Firestore Database ID `ai-studio-remixlearnhub-ff26afcc-c996-4c46-8ac1-582d1c0c7ccd`.
+2. Cloud Firestore security rules are defined in `firestore.rules`.
+3. Users authenticate via Google Sign-In with popup through Firebase Auth.
 
 ---
 
@@ -127,13 +126,11 @@ npm install
 Create a `.env` file in the root directory based on `.env.example`:
 
 ```env
-MONGODB_URI=mongodb://localhost:27017/ai-study-assistant
-JWT_SECRET=your_secure_jwt_secret_key
 GEMINI_API_KEY=your_gemini_api_key
 AI_API_KEY=your_gemini_api_key
-AI_MODEL=gemini-3.8-flash
-EXTERNAL_SEARCH_API_KEY=
+AI_MODEL=gemini-flash-latest
 PORT=3000
+NODE_ENV=production
 ```
 
 ---
@@ -177,5 +174,5 @@ npm run start
 ## 13. Deployment Instructions
 
 1. Run `npm run build` to compile the React/TypeScript frontend into `dist/`.
-2. Configure environment variables (`MONGODB_URI`, `JWT_SECRET`, `GEMINI_API_KEY`, `NODE_ENV=production`, `PORT=3000`) on your hosting provider (Cloud Run, Render, Railway, or VPS).
+2. Configure environment variables (`GEMINI_API_KEY`, `SESSION_SECRET`, `NODE_ENV=production`, `PORT=3000`) on your hosting provider (Vercel, Cloud Run, Render, or VPS).
 3. Start the production server with `npm run start`.

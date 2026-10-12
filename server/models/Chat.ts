@@ -1,5 +1,3 @@
-import mongoose, { Schema, Document as MongoDoc } from 'mongoose';
-
 export interface IChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -14,54 +12,13 @@ export interface IChatMessage {
   timestamp: string;
 }
 
-export interface IChat extends MongoDoc {
+export interface IChat {
+  _id: string;
+  id?: string;
   userId: string;
   documentId: string;
   messages: IChatMessage[];
   sourceMode: 'pdf_only' | 'pdf_and_external';
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
-
-const ChatMessageSchema = new Schema<IChatMessage>(
-  {
-    id: { type: String, required: true },
-    role: { type: String, enum: ['user', 'assistant'], required: true },
-    content: { type: String, required: true },
-    sourceType: {
-      type: String,
-      enum: ['pdf', 'external', 'not_found', 'system'],
-      default: 'pdf',
-    },
-    sourceLabel: { type: String },
-    relevantSection: { type: String },
-    requiresExternalPermission: { type: Boolean, default: false },
-    pendingQuestion: { type: String },
-    permissionResolved: { type: Boolean, default: false },
-    sources: [
-      {
-        title: { type: String },
-        url: { type: String },
-        domain: { type: String },
-      },
-    ],
-    timestamp: { type: String, default: () => new Date().toISOString() },
-  },
-  { _id: false }
-);
-
-const ChatSchema = new Schema<IChat>(
-  {
-    userId: { type: String, required: true, index: true },
-    documentId: { type: String, required: true, index: true },
-    messages: [ChatMessageSchema],
-    sourceMode: {
-      type: String,
-      enum: ['pdf_only', 'pdf_and_external'],
-      default: 'pdf_only',
-    },
-  },
-  { timestamps: true }
-);
-
-export const ChatModel = mongoose.models.Chat || mongoose.model<IChat>('Chat', ChatSchema);

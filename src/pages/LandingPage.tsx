@@ -562,7 +562,7 @@ export default function LandingPage({
                 setInfoModal({
                   title: 'Contact & Academic Support',
                   content:
-                    'Built as a full-stack engineering platform using React, TypeScript, Tailwind CSS, Node.js, Express, MongoDB/Mongoose, and Gemini AI. For academic inquiries, reach out to support@aistudyassistant.edu.',
+                    'Built as a full-stack engineering platform using React, TypeScript, Tailwind CSS, Node.js, Express, Firebase Firestore & Auth, and Gemini AI. For academic inquiries, reach out to support@aistudyassistant.edu.',
                 })
               }
               className="hover:text-white transition-colors cursor-pointer"
